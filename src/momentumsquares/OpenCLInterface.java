@@ -21,7 +21,7 @@ public class OpenCLInterface {
     private final ByteOrder byteOrder;
 
     private final MomentumKernal momentumKernal = new MomentumKernal();
-    private final CollisionKernal collisionKernal = new CollisionKernal();
+    private final IntersectionKernal collisionKernal = new IntersectionKernal();
 
     public OpenCLInterface() throws IOException {
         context = JavaCL.createBestContext();
@@ -36,48 +36,48 @@ public class OpenCLInterface {
         return momentumKernal.execute(inArray1, inArray2);
     }
 
-    public float[] executeCollisionKernal(float[] mainRect, float[] otherRects) throws IOException {
-        return collisionKernal.execute(mainRect, otherRects);
+    public float[] executeIntersectionKernal(float[] rects) throws IOException {
+        return collisionKernal.execute(rects);
     }
 
-    private class CollisionKernal {
+    private class IntersectionKernal {
 
         private CLKernel collisionKernel;
         private CLEvent collisionEvt;
 
-        private Pointer<Float> mainRectPointer;
-        private Pointer<Float> otherRectsPointer;
+        private Pointer<Float> rectsPointer;
+        private Pointer<Float> totalPointer;
         private Pointer<Float> resultPointer;
 
-        private CLBuffer<Float> mainRectBuffer;
-        private CLBuffer<Float> otherRectsBuffer;
+        private CLBuffer<Float> rectsBuffer;
+        private CLBuffer<Float> totalBuffer;
         private CLBuffer<Float> resultBuffer;
 
-        private float[] execute(float[] mainRect, float[] otherRects) throws IOException {
+        private float[] execute(float[] rects) throws IOException {
             if (collisionKernel == null) {
-                String src = IOUtils.readText(OpenCLInterface.class.getResource("kernals/collisionKernal.cl"));
+                String src = IOUtils.readText(OpenCLInterface.class.getResource("kernals/intersectionKernal.cl"));
                 CLProgram collisionProgram = context.createProgram(src);
-                collisionKernel = collisionProgram.createKernel("collisionKernel");
+                collisionKernel = collisionProgram.createKernel("intersectionKernel");
             }
 
-            mainRectPointer = Pointer.allocateFloats(mainRect.length).order(byteOrder);
-            otherRectsPointer = Pointer.allocateFloats(otherRects.length).order(byteOrder);
-            resultPointer = Pointer.allocateFloats(2).order(byteOrder);
+            rectsPointer = Pointer.allocateFloats(rects.length).order(byteOrder);
+            totalPointer = Pointer.allocateFloat().order(byteOrder);
+            resultPointer = Pointer.allocateFloats(rects.length / 4).order(byteOrder);
 
-            mainRectPointer.setFloats(mainRect);
-            otherRectsPointer.setFloats(otherRects);
+            rectsPointer.setFloats(rects);
+            totalPointer.setFloat(rects.length / 4);
 
-            mainRectBuffer = context.createBuffer(Usage.Input, mainRectPointer);
-            otherRectsBuffer = context.createBuffer(Usage.Input, otherRectsPointer);
+            rectsBuffer = context.createBuffer(Usage.Input, rectsPointer);
+            totalBuffer = context.createBuffer(Usage.Input, totalPointer);
             resultBuffer = context.createBuffer(Usage.Output, resultPointer);
 
-            collisionKernel.setArgs(mainRectBuffer, otherRectsBuffer, resultBuffer);
-            collisionEvt = collisionKernel.enqueueNDRange(queue, new int[]{otherRects.length / 4});
+            collisionKernel.setArgs(rectsBuffer, totalBuffer, resultBuffer);
+            collisionEvt = collisionKernel.enqueueNDRange(queue, new int[]{rects.length / 4});
 
             resultPointer = resultBuffer.read(queue, collisionEvt);
             
-            mainRectBuffer.release();
-            otherRectsBuffer.release();
+            rectsBuffer.release();
+            totalBuffer.release();
             resultBuffer.release();
 
             return resultPointer.getFloats();

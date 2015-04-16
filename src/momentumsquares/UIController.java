@@ -60,7 +60,7 @@ public class UIController extends Controller {
         // Lables and sliders:
         entityCountLabel = new Label(menuX + 5, menuY + 5, 100, 25, "Squares: ", mouse,
                 mouseDown, MENU_FOREGROUND, MENU_BACKGROUND);
-        entityCountSlider = new Slider(menuX + MENU_WIDTH - 390 - 10, menuY + 5, 390, 25, mouse, mouseDown, 0, 5000, 750);
+        entityCountSlider = new Slider(menuX + MENU_WIDTH - 390 - 10, menuY + 5, 390, 25, mouse, mouseDown, 0, 10000, 750);
         entityCountSlider.setBackgroundColorAll(MENU_BACKGROUND);
         minEntitySizeLabel = new Label(menuX + 5, menuY + 30, 100, 25, "Min Size: ", mouse,
                 mouseDown, MENU_FOREGROUND, MENU_BACKGROUND);
@@ -113,6 +113,8 @@ public class UIController extends Controller {
                 maxEntityMassSlider.getValue(), minEntitySpeedSlider.getValue(),
                 maxEntitySpeedSlider.getValue());
         menuVisible = false;
+        momentumUpdater.resetStats();
+        core.resetStats();
     }
 
     private void toggleGPUButtonPressed() {

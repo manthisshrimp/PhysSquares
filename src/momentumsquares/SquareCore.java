@@ -22,15 +22,13 @@ public class SquareCore extends Core {
     private final MomentumUpdater entityUpdater = new MomentumUpdater();
     private final Renderer uiRenderer = new Renderer();
     private final Updater uiUpdater = new Updater();
-    private final UIController uiController = new UIController(uiUpdater, 
+    private final UIController uiController = new UIController(uiUpdater,
             uiRenderer, mouse, mouseDown, this, entityUpdater);
-    
-    private final Color MENU_OUTLINE = new Color(0x365E63);
-    private final Color MENU_BACKGROUND = new Color(0x151515);
+
     private final DecimalFormat df = new DecimalFormat("##.###");
     private final Random random = new Random();
 
-    private boolean showLoopDebug = true;
+    private boolean showLoopDebug = false;
     private boolean lockRenderer = false;
     private boolean rendererLocked = true;
 
@@ -146,17 +144,23 @@ public class SquareCore extends Core {
             g2.fillRect(0, 0, 120, 64);
             g2.setColor(Color.WHITE);
             g2.setFont(new Font("Monospaced", Font.PLAIN, 12));
-            if (entityUpdater.runs > 0) {
-                g2.drawString("CL Avg: " + df.format(entityUpdater.totalCompareLoopTime / entityUpdater.runs / 1000000)
+            if (entityUpdater.compareRunsGPU > 0) {
+                g2.drawString("CL Avg: " + df.format(entityUpdater.totalCompareLoopTime / entityUpdater.compareRunsGPU / 1000000)
                         + "ms", 2, 12);
-                g2.drawString("GL Avg: " + df.format(entityUpdater.totalGetLoopTime / entityUpdater.runs / 1000000)
+            }
+            if (entityUpdater.updateRunsGPU > 0) {
+                g2.drawString("UL Avg: " + df.format(entityUpdater.totalMomentumLoopTime / entityUpdater.updateRunsGPU / 1000000)
                         + "ms", 2, 24);
-                g2.drawString("ML Avg: " + df.format(entityUpdater.totalMomentumLoopTime / entityUpdater.runs / 1000000)
-                        + "ms", 2, 36);
-                g2.drawString("SL Avg: " + df.format(entityUpdater.totalSetLoopTime / entityUpdater.runs / 1000000)
-                        + "ms", 2, 48);
             }
             if (runs > 0) {
+                g2.drawString("EU Avg: " + df.format(entityUpdater.totalEntityUpdateTime / runs / 1000000)
+                        + "ms", 2, 36);
+                if (entityUpdater.compareRunsGPU > 0 && entityUpdater.updateRunsGPU > 0) {
+                    g2.drawString("CT Avg: " + df.format(
+                            (entityUpdater.totalCompareLoopTime / entityUpdater.compareRunsGPU / 1000000)
+                            + (entityUpdater.totalMomentumLoopTime / entityUpdater.updateRunsGPU / 1000000)
+                            + (entityUpdater.totalEntityUpdateTime / runs / 1000000)) + "ms", 2, 48);
+                }
                 g2.drawString("TO Avg: " + df.format(totalEntityUpdateTime / runs / 1000000)
                         + "ms", 2, 60);
             }
