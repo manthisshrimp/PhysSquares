@@ -1,4 +1,4 @@
-package momentumsquares;
+package physsquares;
 
 import j2dgl.update.Updater;
 import java.io.IOException;

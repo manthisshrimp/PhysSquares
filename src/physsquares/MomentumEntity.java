@@ -1,4 +1,4 @@
-package momentumsquares;
+package physsquares;
 
 import j2dgl.entity.DrawableEntity;
 import java.awt.Color;

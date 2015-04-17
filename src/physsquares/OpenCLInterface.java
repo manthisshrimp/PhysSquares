@@ -1,4 +1,4 @@
-package momentumsquares;
+package physsquares;
 
 import com.nativelibs4java.opencl.CLBuffer;
 import com.nativelibs4java.opencl.CLContext;

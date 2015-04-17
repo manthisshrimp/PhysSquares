@@ -1,4 +1,4 @@
-package momentumsquares;
+package physsquares;
 
 import j2dgl.render.Renderer;
 import j2dgl.ui.Button;
