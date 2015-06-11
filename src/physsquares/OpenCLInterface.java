@@ -20,27 +20,27 @@ public class OpenCLInterface {
     private final CLQueue queue;
     private final ByteOrder byteOrder;
 
-    private final MomentumKernal momentumKernal = new MomentumKernal();
-    private final IntersectionKernal collisionKernal = new IntersectionKernal();
+    private final MomentumKernalExecuter momentumKernalExecuter = new MomentumKernalExecuter();
+    private final IntersectionKernalExecuter collisionKernalExecuter = new IntersectionKernalExecuter();
 
     public OpenCLInterface() throws IOException {
         context = JavaCL.createBestContext();
         for (CLDevice d : context.getDevices()) {
-            System.out.println(d.getName());
+            System.out.println("Using device: " + d.getName());
         }
         queue = context.createDefaultQueue();
         byteOrder = context.getByteOrder();
     }
 
     public float[] executeMomentumKernal(float[] inArray1, float[] inArray2) throws IOException {
-        return momentumKernal.execute(inArray1, inArray2);
+        return momentumKernalExecuter.execute(inArray1, inArray2);
     }
 
     public float[] executeIntersectionKernal(float[] rects) throws IOException {
-        return collisionKernal.execute(rects);
+        return collisionKernalExecuter.execute(rects);
     }
 
-    private class IntersectionKernal {
+    private class IntersectionKernalExecuter {
 
         private CLKernel collisionKernel;
         private CLEvent collisionEvt;
@@ -75,7 +75,7 @@ public class OpenCLInterface {
             collisionEvt = collisionKernel.enqueueNDRange(queue, new int[]{rects.length / 4});
 
             resultPointer = resultBuffer.read(queue, collisionEvt);
-            
+
             rectsBuffer.release();
             totalBuffer.release();
             resultBuffer.release();
@@ -84,7 +84,7 @@ public class OpenCLInterface {
         }
     }
 
-    private class MomentumKernal {
+    private class MomentumKernalExecuter {
 
         private CLKernel momentumKernel;
         private CLEvent momentumEvt;
@@ -112,7 +112,7 @@ public class OpenCLInterface {
 
             inArray1Pointer.setFloats(inArray1);
             inArray2Pointer.setFloats(inArray2);
-            
+
             inBuffer1 = context.createBuffer(Usage.Input, inArray1Pointer);
             inBuffer2 = context.createBuffer(Usage.Input, inArray2Pointer);
             outBuffer = context.createBuffer(Usage.Output, outArrayPointer);
@@ -121,7 +121,7 @@ public class OpenCLInterface {
             momentumEvt = momentumKernel.enqueueNDRange(queue, new int[]{intputSize});
 
             outArrayPointer = outBuffer.read(queue, momentumEvt);
-            
+
             inBuffer1.release();
             inBuffer2.release();
             outBuffer.release();

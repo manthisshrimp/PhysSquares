@@ -1,5 +1,7 @@
 package physsquares;
 
+import physsquares.update.EntityUpdater;
+import physsquares.entity.PhysEntity;
 import j2dgl.Core;
 import j2dgl.render.Renderer;
 import j2dgl.update.Updater;
@@ -7,23 +9,20 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.event.KeyEvent;
-import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.math.RoundingMode;
 import java.net.URL;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.Random;
 import javax.imageio.ImageIO;
 
 public class SquareCore extends Core {
 
     private final Renderer entityRenderer = new Renderer();
-    private final MomentumUpdater entityUpdater = new MomentumUpdater();
+    private final EntityUpdater entityUpdater = new EntityUpdater();
     private final Renderer uiRenderer = new Renderer();
     private final Updater uiUpdater = new Updater();
-    private final UIController uiController = new UIController(uiUpdater,
-            uiRenderer, mouse, mouseDown, this, entityUpdater);
+    private UIController uiController;
 
     private final DecimalFormat df = new DecimalFormat("##.###");
     private final Random random = new Random();
@@ -38,7 +37,7 @@ public class SquareCore extends Core {
 
     public static void main(String[] args) {
         // (+ 2)'s are to compensate for an insets issue with the JFrame.
-        new SquareCore(1280 + 2, 720 + 2).startLoop();
+        new SquareCore(640, 360).startLoop();
     }
 
     public SquareCore(int width, int height) {
@@ -48,6 +47,7 @@ public class SquareCore extends Core {
 
     @Override
     protected void init() {
+        uiController = new UIController(uiUpdater, uiRenderer, inputHandler, this, entityUpdater);
         frame.setTitle("Momentum Squares -<[Esc] Menu>- -<[9, 0] debug info>-");
         URL imageURL = SquareCore.class.getResource("res/ms.png");
         if (imageURL != null) {
@@ -56,7 +56,7 @@ public class SquareCore extends Core {
             } catch (IOException ex) {
             }
         }
-        generateEntities(750, 1, 3, 100, 2000, 1, 3);
+        generateEntities(10000, 1, 3, 100, 1000, 1, 3);
     }
 
     public void generateEntities(int entityCount, int minEntitySize, int maxEntitySize,
@@ -69,45 +69,46 @@ public class SquareCore extends Core {
         }
 
         entityUpdater.clear();
-        entityRenderer.getRenderables().clear();
+        entityRenderer.clear();
 
         for (int i = 0; i < entityCount; i++) {
-            int size = (maxEntitySize != minEntitySize)
+            int size = (maxEntitySize > minEntitySize)
                     ? random.nextInt(maxEntitySize - minEntitySize) + minEntitySize
                     : minEntitySize;
-            MomentumEntity newEntity = new MomentumEntity(
-                    random.nextInt(getResolution().width - 10 - maxEntitySize) + 10,
-                    random.nextInt(getResolution().height - 10 - maxEntitySize) + 10,
+            PhysEntity newEntity = new PhysEntity(
+                    random.nextInt(contentResolution.width - 10 - maxEntitySize) + 10,
+                    random.nextInt(contentResolution.height - 10 - maxEntitySize) + 10,
                     size,
                     size,
-                    (maxEntityMass != minEntityMass)
+                    (maxEntityMass > minEntityMass)
                             ? random.nextInt(maxEntityMass - minEntityMass) + minEntityMass
                             : minEntityMass);
-            newEntity.setTarget(
-                    getResolution().width / 2,
-                    getResolution().height / 2,
-                    (maxEntitySpeed != minEntitySpeed)
+            newEntity.applyMovement(
+                    (random.nextInt(10) + 1) * (random.nextBoolean() ? 1 : -1),
+                    (random.nextInt(10) + 1) * (random.nextBoolean() ? 1 : -1),
+//                    0,
+//                    1,
+                    (maxEntitySpeed > minEntitySpeed)
                             ? random.nextInt(maxEntitySpeed - minEntitySpeed) + minEntitySpeed
                             : minEntitySpeed);
-            entityRenderer.addRenderable(newEntity);
+            entityRenderer.addDrawable(newEntity);
             entityUpdater.addUpdatable(newEntity);
         }
 
         generateWalls();
-
         lockRenderer = false;
     }
 
     private void generateWalls() {
-        MomentumEntity topWall = new MomentumEntity(0, 0,
-                getResolution().width - 10, 10, 2000000000, Color.DARK_GRAY);
-        MomentumEntity leftWall = new MomentumEntity(0, 10,
-                10, getResolution().height - 10, 2000000000, Color.DARK_GRAY);
-        MomentumEntity bottomWall = new MomentumEntity(10, getResolution().height - 10,
-                getResolution().width - 10, 10, 2000000000, Color.DARK_GRAY);
-        MomentumEntity rightWall = new MomentumEntity(getResolution().width - 10, 0,
-                10, getResolution().width - 10, 2000000000, Color.DARK_GRAY);
-        entityRenderer.addRenderables(topWall, leftWall, bottomWall, rightWall);
+        PhysEntity topWall = new PhysEntity(0, 0,
+                contentResolution.width - 10, 10, 2000000000, Color.DARK_GRAY);
+        PhysEntity leftWall = new PhysEntity(0, 10,
+                10, contentResolution.height - 10, 2000000000, Color.DARK_GRAY);
+        PhysEntity bottomWall = new PhysEntity(10, contentResolution.height - 10,
+                contentResolution.width - 10, 10, 2000000000, Color.DARK_GRAY);
+        PhysEntity rightWall = new PhysEntity(contentResolution.width - 10, 0,
+                10, contentResolution.width - 10, 2000000000, Color.DARK_GRAY);
+        entityRenderer.addDrawables(topWall, leftWall, bottomWall, rightWall);
         entityUpdater.addUpdatables(topWall, leftWall, bottomWall, rightWall);
     }
 
@@ -118,6 +119,13 @@ public class SquareCore extends Core {
 
     @Override
     protected void update() {
+        // Handle key presses
+        if (inputHandler.isKeyDownConsume(KeyEvent.VK_ESCAPE)) {
+            uiController.menuVisible = !uiController.menuVisible;
+        }
+        if (inputHandler.isKeyDownConsume(KeyEvent.VK_9)) {
+            showLoopDebug = !showLoopDebug;
+        }
         if (uiController.menuVisible) {
             uiUpdater.updateAll();
         } else {
@@ -129,7 +137,7 @@ public class SquareCore extends Core {
     }
 
     @Override
-    protected void draw(Graphics2D g2) {
+    public void draw(Graphics2D g2, int xOffset, int yOffset) {
         if (lockRenderer) {
             rendererLocked = true;
         } else {
@@ -141,57 +149,29 @@ public class SquareCore extends Core {
         }
         if (showLoopDebug) {
             g2.setColor(Color.BLACK);
-            g2.fillRect(0, 0, 120, 64);
+            g2.fillRect(0, 0, 165, 65);
             g2.setColor(Color.WHITE);
             g2.setFont(new Font("Monospaced", Font.PLAIN, 12));
             if (entityUpdater.compareRunsGPU > 0) {
-                g2.drawString("CL Avg: " + df.format(entityUpdater.totalCompareLoopTime / entityUpdater.compareRunsGPU / 1000000)
+                g2.drawString("Compare Avg : " + df.format(entityUpdater.totalCompareLoopTime / entityUpdater.compareRunsGPU / 1000000)
                         + "ms", 2, 12);
             }
             if (entityUpdater.updateRunsGPU > 0) {
-                g2.drawString("UL Avg: " + df.format(entityUpdater.totalMomentumLoopTime / entityUpdater.updateRunsGPU / 1000000)
+                g2.drawString("Momentum Avg: " + df.format(entityUpdater.totalMomentumLoopTime / entityUpdater.updateRunsGPU / 1000000)
                         + "ms", 2, 24);
             }
             if (runs > 0) {
-                g2.drawString("EU Avg: " + df.format(entityUpdater.totalEntityUpdateTime / runs / 1000000)
+                g2.drawString("Movement Avg: " + df.format(entityUpdater.totalEntityUpdateTime / runs / 1000000)
                         + "ms", 2, 36);
                 if (entityUpdater.compareRunsGPU > 0 && entityUpdater.updateRunsGPU > 0) {
-                    g2.drawString("CT Avg: " + df.format(
+                    g2.drawString("Combined Avg: " + df.format(
                             (entityUpdater.totalCompareLoopTime / entityUpdater.compareRunsGPU / 1000000)
                             + (entityUpdater.totalMomentumLoopTime / entityUpdater.updateRunsGPU / 1000000)
                             + (entityUpdater.totalEntityUpdateTime / runs / 1000000)) + "ms", 2, 48);
                 }
-                g2.drawString("TO Avg: " + df.format(totalEntityUpdateTime / runs / 1000000)
+                g2.drawString("Total Avg   : " + df.format(totalEntityUpdateTime / runs / 1000000)
                         + "ms", 2, 60);
             }
         }
     }
-
-    @Override
-    protected void keysPressed(ArrayList<Integer> keyQueue) {
-        if (keyQueue.contains(KeyEvent.VK_ESCAPE)) {
-            uiController.menuVisible = !uiController.menuVisible;
-            keyQueue.remove((Integer) KeyEvent.VK_ESCAPE);
-        }
-        if (keyQueue.contains(KeyEvent.VK_9)) {
-            showLoopDebug = !showLoopDebug;
-            keyQueue.remove((Integer) KeyEvent.VK_9);
-        }
-    }
-
-    @Override
-    protected void keyTyped(KeyEvent keyEvent) {
-
-    }
-
-    @Override
-    protected void processMouse(MouseEvent mouseEvent) {
-
-    }
-
-    @Override
-    protected void beforeClose() {
-
-    }
-
 }
