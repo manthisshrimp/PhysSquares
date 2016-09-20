@@ -1,7 +1,7 @@
 package physsquares;
 
+import j2dgl.input.InputHandler;
 import physsquares.update.EntityUpdater;
-import j2dgl.InputHandler;
 import j2dgl.render.Renderer;
 import j2dgl.ui.Button;
 import j2dgl.ui.Controller;

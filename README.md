@@ -1,4 +1,4 @@
-# MomentumSquares
+# PhysSquares
 Small scale momentum simulation with some OpenCL integration.
 
-Requires j2dgl v0.01.
+Requires latest version of j2dgl.

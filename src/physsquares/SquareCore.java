@@ -56,7 +56,7 @@ public class SquareCore extends Core {
             } catch (IOException ex) {
             }
         }
-        generateEntities(10000, 1, 3, 100, 1000, 1, 3);
+        generateEntities(100, 5, 5, 500, 500, 1, 1);
     }
 
     public void generateEntities(int entityCount, int minEntitySize, int maxEntitySize,
@@ -86,16 +86,17 @@ public class SquareCore extends Core {
             newEntity.applyMovement(
                     (random.nextInt(10) + 1) * (random.nextBoolean() ? 1 : -1),
                     (random.nextInt(10) + 1) * (random.nextBoolean() ? 1 : -1),
-//                    0,
-//                    1,
-                    (maxEntitySpeed > minEntitySpeed)
-                            ? random.nextInt(maxEntitySpeed - minEntitySpeed) + minEntitySpeed
-                            : minEntitySpeed);
+                    0.1);
+                    //                    0,
+                    //                    1,
+//                    (maxEntitySpeed > minEntitySpeed)
+//                            ? random.nextInt(maxEntitySpeed - minEntitySpeed) + minEntitySpeed
+//                            : minEntitySpeed);
             entityRenderer.addDrawable(newEntity);
             entityUpdater.addUpdatable(newEntity);
         }
 
-        generateWalls();
+//        generateWalls();
         lockRenderer = false;
     }
 

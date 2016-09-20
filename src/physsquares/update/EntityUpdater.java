@@ -72,10 +72,10 @@ public class EntityUpdater extends Updater<PhysEntity> {
             }
             try {
                 collisionResults = openCLInterface.executeIntersectionKernal(rectangles);
-                for (int i = 0; i < collisionResults.length; i++) {
+                for (int i = 0; i < collisionResults.length; ++i) {
                     if (collisionResults[i] != -1) {
                         collisionPairs.add(updatables.get(i));
-                        collisionPairs.add(updatables.get((int) collisionResults[i]));
+                        collisionPairs.add(updatables.get((int) collisionResults[i] - 1));
                     }
                 }
             } catch (IOException ex) {
@@ -121,27 +121,27 @@ public class EntityUpdater extends Updater<PhysEntity> {
                 checkTime = System.nanoTime();
                 updateRunsGPU++;
             }
-            // ========== Apply Gravity ========================================
-//            points = new float[updatables.size() * 2];
-//            speeds = new float[updatables.size() * 2];
-//            masses = new float[updatables.size()];
-//            newSpeeds = new float[speeds.length];
-//            for (int i = 0; i < updatables.size(); i++) {
-//                tempEntity = updatables.get(i);
-//                masses[i] = (float) tempEntity.mass;
-//                /////////////////////////////////////////////////////////
-//                points[i * 2] = (float) tempEntity.x * DIST_MOD;
-//                points[i * 2 + 1] = (float) tempEntity.y * DIST_MOD;
-//                /////////////////////////////////////////////////////////
-//                speeds[i * 2] = (float) tempEntity.xIncrement;
-//                speeds[i * 2 + 1] = (float) tempEntity.yIncrement;
-//            }
-//            newSpeeds = gKDummy.execute(masses, speeds, points, DIST_MOD);
-//            for (int i = 0; i < updatables.size(); i++) {
-//                tempEntity = updatables.get(i);
-//                tempEntity.xIncrement = newSpeeds[i * 2];
-//                tempEntity.yIncrement = newSpeeds[i * 2 + 1];
-//            }
+//             ========== Apply Gravity ========================================
+            points = new float[updatables.size() * 2];
+            speeds = new float[updatables.size() * 2];
+            masses = new float[updatables.size()];
+            newSpeeds = new float[speeds.length];
+            for (int i = 0; i < updatables.size(); i++) {
+                tempEntity = updatables.get(i);
+                masses[i] = (float) tempEntity.mass;
+                /////////////////////////////////////////////////////////
+                points[i * 2] = (float) tempEntity.x * DIST_MOD;
+                points[i * 2 + 1] = (float) tempEntity.y * DIST_MOD;
+                /////////////////////////////////////////////////////////
+                speeds[i * 2] = (float) tempEntity.xIncrement;
+                speeds[i * 2 + 1] = (float) tempEntity.yIncrement;
+            }
+            newSpeeds = gKDummy.execute(masses, speeds, points, DIST_MOD);
+            for (int i = 0; i < updatables.size(); i++) {
+                tempEntity = updatables.get(i);
+                tempEntity.xIncrement = newSpeeds[i * 2];
+                tempEntity.yIncrement = newSpeeds[i * 2 + 1];
+            }
         }
     }
 

@@ -79,7 +79,7 @@ public class OpenCLInterface {
             rectsBuffer.release();
             totalBuffer.release();
             resultBuffer.release();
-
+            
             return resultPointer.getFloats();
         }
     }
