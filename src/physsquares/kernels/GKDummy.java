@@ -2,45 +2,44 @@ package physsquares.kernels;
 
 public class GKDummy {
 
-    public float[] execute(float[] masses, float[] speeds, float[] points, float distMod) {
-        int totalObjects = masses.length;
+    public float[] execute(int totalOther, float[] masses, float[] speeds, float[] points, float distanceModifier) {
         float[] results = new float[speeds.length];
-        for (int gid = 0; gid < totalObjects; gid++) {
+        for (int gid = 0; gid < totalOther; gid++) {
             // KERNAL BODY
             // own speeds
-            float txs = speeds[gid * 2];
-            float tys = speeds[gid * 2 + 1];
+            float thisXSpeed = speeds[gid * 2];
+            float thisYSpeed = speeds[gid * 2 + 1];
             // own point
-            float tx = points[gid * 2];
-            float ty = points[gid * 2 + 1];
+            float thisX = points[gid * 2];
+            float thisY = points[gid * 2 + 1];
             // own mass
-            float tm = masses[gid];
+            float thisMass = masses[gid];
             // Compare with every other object
-            for (int i = 0; i < totalObjects; i++) {
+            for (int i = 0; i < totalOther; i++) {
                 if (i != gid) {
                     // others's point
-                    float ox = points[i * 2];
-                    float oy = points[i * 2 + 1];
+                    float otherX = points[i * 2];
+                    float otherY = points[i * 2 + 1];
                     // other's mass
-                    float om = masses[i];
+                    float otherMass = masses[i];
                     // Calculate distances
-                    float dist = (float) Math.sqrt(Math.pow((tx - ox), 2) + Math.pow(ty - oy, 2));
-                    if (dist < (1.5 * distMod)) {
+                    float distance = (float) Math.sqrt(Math.pow((thisX - otherX), 2) + Math.pow(thisY - otherY, 2));
+                    if (distance < (1.5 * distanceModifier)) {
                         continue;
                     }
                     // Calculate force
-                    float force = (6.674e-11F * tm * om) / (dist * dist);
+                    float force = (6.674e-11F * thisMass * otherMass) / (distance * distance);
                     // Calculate accelaration
-                    float acc = force / tm;
+                    float acc = force / thisMass;
                     // Calculate accelaration for each axis
-                    if (dist != 0 && acc != 0) {
-                        txs -= (tx - ox) / dist * acc;
-                        tys -= (ty - oy) / dist * acc;
+                    if (distance != 0 && acc != 0) {
+                        thisXSpeed -= (thisX - otherX) / distance * acc;
+                        thisYSpeed -= (thisY - otherY) / distance * acc;
                     }
                 }
             }
-            results[gid * 2] = txs;
-            results[gid * 2 + 1] = tys;
+            results[gid * 2] = thisXSpeed;
+            results[gid * 2 + 1] = thisYSpeed;
             // END KERNAL
         }
         return results;

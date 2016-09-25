@@ -1,7 +1,8 @@
 __kernel void intersectionKernel(
 __global const float *rects,
 __global const float *total,
-__global float *results) {
+__global float *results)
+{
     int gid = get_global_id(0);
     int t = *total;
 

@@ -56,7 +56,7 @@ public class SquareCore extends Core {
             } catch (IOException ex) {
             }
         }
-        generateEntities(100, 5, 5, 500, 500, 1, 1);
+        generateEntities(200, 3, 1, 1000, 1000, 1, 1);
     }
 
     public void generateEntities(int entityCount, int minEntitySize, int maxEntitySize,

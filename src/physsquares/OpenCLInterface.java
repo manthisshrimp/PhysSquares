@@ -22,6 +22,7 @@ public class OpenCLInterface {
 
     private final MomentumKernelExecuter momentumKernelExecuter = new MomentumKernelExecuter();
     private final IntersectionKernelExecuter collisionKernelExecuter = new IntersectionKernelExecuter();
+    private final GravityKernelExecuter gravityKernelExecuter = new GravityKernelExecuter();
 
     public OpenCLInterface() throws IOException {
         context = JavaCL.createBestContext();
@@ -38,6 +39,10 @@ public class OpenCLInterface {
 
     public float[] executeIntersectionKernel(float[] rects) throws IOException {
         return collisionKernelExecuter.execute(rects);
+    }
+
+    public float[] executeGravityKernel(int totalOther, float[] masses, float[] speeds, float[] points, float distanceModifier) throws IOException {
+        return gravityKernelExecuter.execute(totalOther, masses, speeds, points, distanceModifier);
     }
 
     private class IntersectionKernelExecuter {
@@ -79,7 +84,7 @@ public class OpenCLInterface {
             rectsBuffer.release();
             totalBuffer.release();
             resultBuffer.release();
-            
+
             return resultPointer.getFloats();
         }
     }
@@ -128,5 +133,65 @@ public class OpenCLInterface {
 
             return outArrayPointer.getFloats();
         }
+    }
+
+    private class GravityKernelExecuter {
+
+        private CLKernel gravityKernel;
+        private CLEvent completionEvent;
+
+        private Pointer<Float> massesArrayPointer;
+        private Pointer<Float> speedsArrayPointer;
+        private Pointer<Float> pointsArrayPointer;
+        private Pointer<Float> resultsArrayPointer;
+
+        private CLBuffer<Float> massesBuffer;
+        private CLBuffer<Float> speedsBuffer;
+        private CLBuffer<Float> pointsBuffer;
+        private CLBuffer<Float> resultsBuffer;
+
+        public float[] execute(int total, float[] masses, float[] speeds, float[] points, float distanceModifier) throws IOException {
+            if (gravityKernel == null) {
+                String src = IOUtils.readText(OpenCLInterface.class.getResource("kernels/gravityKernel.cl"));
+                CLProgram momentumProgram = context.createProgram(src);
+                gravityKernel = momentumProgram.createKernel("gravityKernel");
+            }
+
+            massesArrayPointer = Pointer.allocateFloats(masses.length).order(byteOrder);
+            speedsArrayPointer = Pointer.allocateFloats(speeds.length).order(byteOrder);
+            pointsArrayPointer = Pointer.allocateFloats(points.length).order(byteOrder);
+
+            massesArrayPointer.setFloats(masses);
+            speedsArrayPointer.setFloats(speeds);
+            pointsArrayPointer.setFloats(points);
+
+            resultsArrayPointer = Pointer.allocateFloats(total).order(byteOrder);
+
+            massesBuffer = context.createBuffer(Usage.Input, massesArrayPointer);
+            speedsBuffer = context.createBuffer(Usage.Input, speedsArrayPointer);
+            pointsBuffer = context.createBuffer(Usage.Input, pointsArrayPointer);
+            resultsBuffer = context.createBuffer(Usage.Output, resultsArrayPointer);
+
+            gravityKernel.setArgs(total, distanceModifier, massesBuffer, speedsBuffer, pointsBuffer, resultsBuffer);
+            completionEvent = gravityKernel.enqueueNDRange(queue, new int[]{total});
+
+            resultsArrayPointer = resultsBuffer.read(queue, completionEvent);
+            float[] results = resultsArrayPointer.getFloats();
+
+            massesArrayPointer.release();
+            speedsArrayPointer.release();
+            pointsArrayPointer.release();
+            resultsArrayPointer.release();
+
+            massesBuffer.release();
+            speedsBuffer.release();
+            pointsBuffer.release();
+            resultsBuffer.release();
+            
+            completionEvent.release();
+
+            return results;
+        }
+
     }
 }

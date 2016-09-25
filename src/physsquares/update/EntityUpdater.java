@@ -58,69 +58,69 @@ public class EntityUpdater extends Updater<PhysEntity> {
     @Override
     protected void postUpdate() {
         if (gpuMode) {
-            if (rectangles == null) {
-                rectangles = new float[updatables.size() * 4];
-            }
-            // ========== Check for colisions ==================================
-            checkTime = System.nanoTime();
-            for (int i = 0; i < updatables.size(); i++) {
-                tempEntity = updatables.get(i);
-                rectangles[i * 4] = (float) ((float) tempEntity.x + tempEntity.xIncrement);
-                rectangles[i * 4 + 1] = (float) ((float) tempEntity.y + tempEntity.yIncrement);
-                rectangles[i * 4 + 2] = tempEntity.width;
-                rectangles[i * 4 + 3] = tempEntity.height;
-            }
-            try {
-                collisionResults = openCLInterface.executeIntersectionKernel(rectangles);
-                for (int i = 0; i < collisionResults.length; ++i) {
-                    if (collisionResults[i] != -1) {
-                        collisionPairs.add(updatables.get(i));
-                        collisionPairs.add(updatables.get((int) collisionResults[i]));
-                    }
-                }
-            } catch (IOException ex) {
-                // Do Nothing
-            }
-            totalCompareLoopTime += System.nanoTime() - checkTime;
-            compareRunsGPU++;
-            // ========== Apply momentum logic based on colisions ==============
-            if (collisionPairs.size() > 0) {
-                checkTime = System.nanoTime();
-                speeds = new float[collisionPairs.size() * 2];
-                masses = new float[collisionPairs.size() * 2];
-
-                for (int i = 0; i < collisionPairs.size(); i += 2) {
-                    tempEntity = collisionPairs.get(i);
-                    tempEntity2 = collisionPairs.get(i + 1);
-                    speeds[i * 2] = (float) tempEntity.xIncrement;
-                    speeds[i * 2 + 1] = (float) tempEntity2.xIncrement;
-                    speeds[i * 2 + 2] = (float) tempEntity.yIncrement;
-                    speeds[i * 2 + 3] = (float) tempEntity2.yIncrement;
-
-                    masses[i * 2] = (float) tempEntity.mass;
-                    masses[i * 2 + 1] = (float) tempEntity2.mass;
-                    masses[i * 2 + 2] = (float) tempEntity.mass;
-                    masses[i * 2 + 3] = (float) tempEntity2.mass;
-                }
-                newSpeeds = new float[collisionPairs.size() * 2];
-                try {
-                    newSpeeds = openCLInterface.executeMomentumKernel(speeds, masses);
-                } catch (IOException ex) {
-                    return;
-                }
-                for (int i = 0; i < collisionPairs.size(); i += 2) {
-                    tempEntity = collisionPairs.get(i);
-                    tempEntity2 = collisionPairs.get(i + 1);
-                    tempEntity.xIncrement = newSpeeds[i * 2];
-                    tempEntity2.xIncrement = newSpeeds[i * 2 + 1];
-                    tempEntity.yIncrement = newSpeeds[i * 2 + 2];
-                    tempEntity2.yIncrement = newSpeeds[i * 2 + 3];
-                }
-                collisionPairs.clear();
-                totalMomentumLoopTime += System.nanoTime() - checkTime;
-                checkTime = System.nanoTime();
-                updateRunsGPU++;
-            }
+//            if (rectangles == null) {
+//                rectangles = new float[updatables.size() * 4];
+//            }
+//            // ========== Check for colisions ==================================
+//            checkTime = System.nanoTime();
+//            for (int i = 0; i < updatables.size(); i++) {
+//                tempEntity = updatables.get(i);
+//                rectangles[i * 4] = (float) ((float) tempEntity.x + tempEntity.xIncrement);
+//                rectangles[i * 4 + 1] = (float) ((float) tempEntity.y + tempEntity.yIncrement);
+//                rectangles[i * 4 + 2] = tempEntity.width;
+//                rectangles[i * 4 + 3] = tempEntity.height;
+//            }
+//            try {
+//                collisionResults = openCLInterface.executeIntersectionKernel(rectangles);
+//                for (int i = 0; i < collisionResults.length; ++i) {
+//                    if (collisionResults[i] != -1) {
+//                        collisionPairs.add(updatables.get(i));
+//                        collisionPairs.add(updatables.get((int) collisionResults[i]));
+//                    }
+//                }
+//            } catch (IOException ex) {
+//                // Do Nothing
+//            }
+//            totalCompareLoopTime += System.nanoTime() - checkTime;
+//            compareRunsGPU++;
+//            // ========== Apply momentum logic based on colisions ==============
+//            if (collisionPairs.size() > 0) {
+//                checkTime = System.nanoTime();
+//                speeds = new float[collisionPairs.size() * 2];
+//                masses = new float[collisionPairs.size() * 2];
+//
+//                for (int i = 0; i < collisionPairs.size(); i += 2) {
+//                    tempEntity = collisionPairs.get(i);
+//                    tempEntity2 = collisionPairs.get(i + 1);
+//                    speeds[i * 2] = (float) tempEntity.xIncrement;
+//                    speeds[i * 2 + 1] = (float) tempEntity2.xIncrement;
+//                    speeds[i * 2 + 2] = (float) tempEntity.yIncrement;
+//                    speeds[i * 2 + 3] = (float) tempEntity2.yIncrement;
+//
+//                    masses[i * 2] = (float) tempEntity.mass;
+//                    masses[i * 2 + 1] = (float) tempEntity2.mass;
+//                    masses[i * 2 + 2] = (float) tempEntity.mass;
+//                    masses[i * 2 + 3] = (float) tempEntity2.mass;
+//                }
+//                newSpeeds = new float[collisionPairs.size() * 2];
+//                try {
+//                    newSpeeds = openCLInterface.executeMomentumKernel(speeds, masses);
+//                } catch (IOException ex) {
+//                    return;
+//                }
+//                for (int i = 0; i < collisionPairs.size(); i += 2) {
+//                    tempEntity = collisionPairs.get(i);
+//                    tempEntity2 = collisionPairs.get(i + 1);
+//                    tempEntity.xIncrement = newSpeeds[i * 2];
+//                    tempEntity2.xIncrement = newSpeeds[i * 2 + 1];
+//                    tempEntity.yIncrement = newSpeeds[i * 2 + 2];
+//                    tempEntity2.yIncrement = newSpeeds[i * 2 + 3];
+//                }
+//                collisionPairs.clear();
+//                totalMomentumLoopTime += System.nanoTime() - checkTime;
+//                checkTime = System.nanoTime();
+//                updateRunsGPU++;
+//            }
 //             ========== Apply Gravity ========================================
             points = new float[updatables.size() * 2];
             speeds = new float[updatables.size() * 2];
@@ -136,7 +136,11 @@ public class EntityUpdater extends Updater<PhysEntity> {
                 speeds[i * 2] = (float) tempEntity.xIncrement;
                 speeds[i * 2 + 1] = (float) tempEntity.yIncrement;
             }
-            newSpeeds = gKDummy.execute(masses, speeds, points, DIST_MOD);
+            try {
+                newSpeeds = openCLInterface.executeGravityKernel(newSpeeds.length, masses, speeds, points, DIST_MOD);
+            } catch (IOException ex) {
+                return;
+            }
             for (int i = 0; i < updatables.size(); i++) {
                 tempEntity = updatables.get(i);
                 tempEntity.xIncrement = newSpeeds[i * 2];

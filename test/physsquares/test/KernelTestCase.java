@@ -44,7 +44,7 @@ public class KernelTestCase {
         float distMod = 1.0e-5F;
         float[] result;
 
-        result = new GKDummy().execute(masses, speeds, points, distMod);
+        result = new GKDummy().execute(masses.length, masses, speeds, points, distMod);
 
         Assert.assertNotNull(result);
         System.out.println("Input:    " + Arrays.toString(speeds));
