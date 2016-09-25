@@ -1,4 +1,4 @@
-package physsquares.kernals;
+package physsquares.kernels;
 
 public class GKDummy {
 

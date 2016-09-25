@@ -6,20 +6,20 @@ import org.testng.Assert;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 import physsquares.OpenCLInterface;
-import physsquares.kernals.GKDummy;
+import physsquares.kernels.GKDummy;
 
-public class KernalTestCase {
+public class KernelTestCase {
 
     private static OpenCLInterface openCLInterface;
 
 //    @Test
-    public void testIntersectionKernal() {
+    public void testIntersectionKernel() {
         float[] rects = {0, 0, 5, 5, 2, 2, 5, 5, 20, 20, 1, 1};
         float[] results = null;
         float[] expected = {1, 0, -1};
 
         try {
-            results = openCLInterface.executeIntersectionKernal(rects);
+            results = openCLInterface.executeIntersectionKernel(rects);
         } catch (IOException ex) {
             // Do nothing.
         }
@@ -32,8 +32,8 @@ public class KernalTestCase {
     }
 
 //    @Test
-    public void testMomentumKernal() {
-        // TODO: Write test case for openCLInterface.executeMomentumKernal()
+    public void testMomentumKernel() {
+        // TODO: Write test case for openCLInterface.executeMomentumKernel()
     }
 
     @Test

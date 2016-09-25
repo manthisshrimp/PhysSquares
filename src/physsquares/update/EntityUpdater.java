@@ -5,7 +5,7 @@ import j2dgl.update.Updater;
 import java.io.IOException;
 import java.util.ArrayList;
 import physsquares.OpenCLInterface;
-import physsquares.kernals.GKDummy;
+import physsquares.kernels.GKDummy;
 
 public class EntityUpdater extends Updater<PhysEntity> {
 
@@ -71,7 +71,7 @@ public class EntityUpdater extends Updater<PhysEntity> {
                 rectangles[i * 4 + 3] = tempEntity.height;
             }
             try {
-                collisionResults = openCLInterface.executeIntersectionKernal(rectangles);
+                collisionResults = openCLInterface.executeIntersectionKernel(rectangles);
                 for (int i = 0; i < collisionResults.length; ++i) {
                     if (collisionResults[i] != -1) {
                         collisionPairs.add(updatables.get(i));
@@ -104,7 +104,7 @@ public class EntityUpdater extends Updater<PhysEntity> {
                 }
                 newSpeeds = new float[collisionPairs.size() * 2];
                 try {
-                    newSpeeds = openCLInterface.executeMomentumKernal(speeds, masses);
+                    newSpeeds = openCLInterface.executeMomentumKernel(speeds, masses);
                 } catch (IOException ex) {
                     return;
                 }

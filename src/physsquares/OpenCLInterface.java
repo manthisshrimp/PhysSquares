@@ -20,8 +20,8 @@ public class OpenCLInterface {
     private final CLQueue queue;
     private final ByteOrder byteOrder;
 
-    private final MomentumKernalExecuter momentumKernalExecuter = new MomentumKernalExecuter();
-    private final IntersectionKernalExecuter collisionKernalExecuter = new IntersectionKernalExecuter();
+    private final MomentumKernelExecuter momentumKernelExecuter = new MomentumKernelExecuter();
+    private final IntersectionKernelExecuter collisionKernelExecuter = new IntersectionKernelExecuter();
 
     public OpenCLInterface() throws IOException {
         context = JavaCL.createBestContext();
@@ -32,15 +32,15 @@ public class OpenCLInterface {
         byteOrder = context.getByteOrder();
     }
 
-    public float[] executeMomentumKernal(float[] inArray1, float[] inArray2) throws IOException {
-        return momentumKernalExecuter.execute(inArray1, inArray2);
+    public float[] executeMomentumKernel(float[] inArray1, float[] inArray2) throws IOException {
+        return momentumKernelExecuter.execute(inArray1, inArray2);
     }
 
-    public float[] executeIntersectionKernal(float[] rects) throws IOException {
-        return collisionKernalExecuter.execute(rects);
+    public float[] executeIntersectionKernel(float[] rects) throws IOException {
+        return collisionKernelExecuter.execute(rects);
     }
 
-    private class IntersectionKernalExecuter {
+    private class IntersectionKernelExecuter {
 
         private CLKernel collisionKernel;
         private CLEvent collisionEvt;
@@ -55,7 +55,7 @@ public class OpenCLInterface {
 
         private float[] execute(float[] rects) throws IOException {
             if (collisionKernel == null) {
-                String src = IOUtils.readText(OpenCLInterface.class.getResource("kernals/intersectionKernal.cl"));
+                String src = IOUtils.readText(OpenCLInterface.class.getResource("kernels/intersectionKernel.cl"));
                 CLProgram collisionProgram = context.createProgram(src);
                 collisionKernel = collisionProgram.createKernel("intersectionKernel");
             }
@@ -84,7 +84,7 @@ public class OpenCLInterface {
         }
     }
 
-    private class MomentumKernalExecuter {
+    private class MomentumKernelExecuter {
 
         private CLKernel momentumKernel;
         private CLEvent momentumEvt;
@@ -99,7 +99,7 @@ public class OpenCLInterface {
 
         private float[] execute(float[] inArray1, float[] inArray2) throws IOException {
             if (momentumKernel == null) {
-                String src = IOUtils.readText(OpenCLInterface.class.getResource("kernals/momentumKernel.cl"));
+                String src = IOUtils.readText(OpenCLInterface.class.getResource("kernels/momentumKernel.cl"));
                 CLProgram momentumProgram = context.createProgram(src);
                 momentumKernel = momentumProgram.createKernel("momentumKernel");
             }
