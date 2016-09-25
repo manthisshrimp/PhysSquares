@@ -9,10 +9,10 @@ __global float *results) {
     float ty = rects[gid * 4 + 1];
     float tw = rects[gid * 4 + 2];
     float th = rects[gid * 4 + 3];
+
+    int found = -1;
     
-    float j = 0;
     for (int index = 0; index < t; index++) {
-        j += 10;
         if (index != gid) {
             float rx = rects[index * 4];
             float ry = rects[index * 4 + 1];
@@ -21,13 +21,10 @@ __global float *results) {
 
             if (((rw + rx) < rx || (rw + rx) > tx) && ((rh + ry) < ry || (rh + ry) > ty) 
                     && ((tw + tx) < tx || (tw + tx) > rx) && ((th + ty) < ty || (th + ty) > ry)) {
-
-                // Can't use i as it always returns *total even though the collision detection works fine.
-
-                results[gid] = j / 10;
-                return;
+                found = index;
             }
         }
     }
-    results[gid] = -1;
+
+    results[gid] = found;
 }

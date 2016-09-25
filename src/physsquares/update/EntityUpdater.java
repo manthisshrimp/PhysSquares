@@ -75,7 +75,7 @@ public class EntityUpdater extends Updater<PhysEntity> {
                 for (int i = 0; i < collisionResults.length; ++i) {
                     if (collisionResults[i] != -1) {
                         collisionPairs.add(updatables.get(i));
-                        collisionPairs.add(updatables.get((int) collisionResults[i] - 1));
+                        collisionPairs.add(updatables.get((int) collisionResults[i]));
                     }
                 }
             } catch (IOException ex) {
